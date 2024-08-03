@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="images">
+        <div class="img-1"></div>
+        <div class="img-2"></div>
+      </div>
+      <div class="slider">
+        <div class="drag-line">
+          <span></span>
+        </div>
+        <input type="range" min="0" max="100" value="50">
+      </div>
+    </div>    
+
+    <script>
+      const slider = document.querySelector(".slider input");
+      const img1 = document.querySelector(".images .img-1");
+      const img2 = document.querySelector(".images .img-2");
+      const dragLine = document.querySelector(".slider .drag-line");
+
+      // Function to get the image number from the URL
+      function getImageNumber() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('image') || '1'; // Default to '1' if no parameter is provided
+      }
+
+      const imageNumber = getImageNumber();
+      img1.style.background = `url("images/road${imageNumber}-lidar.webp") no-repeat`;
+      img2.style.background = `url("images/road${imageNumber}.jpg") no-repeat`;
+
+      slider.oninput = ()=>{
+        let sliderVal = slider.value;
+        dragLine.style.left = sliderVal + "%";
+        img2.style.width = sliderVal + "%";
+      }
+    </script>
+
+  </body>
+</html>
