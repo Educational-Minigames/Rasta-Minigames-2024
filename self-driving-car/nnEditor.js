@@ -33,32 +33,32 @@ class NNEditor {
          const level = brain.levels[lev];
          const baseLayer = lev;
          const { inputs, outputs, weights, biases } = level;
-         for(let i=0;i<inputs.length;i++){
-            inputs[i]=0;
+         for (let i = 0; i < inputs.length; i++) {
+            inputs[i] = 0;
          }
-         for(let i=0;i<outputs.length;i++){
-            outputs[i]=0;
+         for (let i = 0; i < outputs.length; i++) {
+            outputs[i] = 0;
          }
          for (let i = 0; i < biases.length; i++) {
-            biases[i]=0;
-            const point= nn.points
+            biases[i] = 0;
+            const point = nn.points
                .filter((p) => p.layer == baseLayer + 1)
                .find((p) => p.index == i);
-            if(point){
-               biases[i] =point.bias;
+            if (point) {
+               biases[i] = point.bias;
             }
          }
          for (let i = 0; i < weights.length; i++) {
             for (let j = 0; j < weights[i].length; j++) {
-               weights[i][j]=0;
+               weights[i][j] = 0;
                const seg = nn.segments
                   .filter(
                      (s) =>
                         s.p1.layer == baseLayer && s.p2.layer == baseLayer + 1
                   )
                   .find((s) => s.p1.index == i && s.p2.index == j);
-               if(seg){
-                  weights[i][j]=seg.weight
+               if (seg) {
+                  weights[i][j] = seg.weight
                }
             }
          }
@@ -212,10 +212,10 @@ class NNEditor {
       save();
    }
 
-   enable(fullEdit=false) {
-      if(fullEdit){
+   enable(fullEdit = false) {
+      if (fullEdit) {
          this.#addEventListeners();
-      }else{
+      } else {
          this.#addWheelListeners();
       }
    }
@@ -226,12 +226,14 @@ class NNEditor {
       this.hovered = false;
    }
 
-   #addWheelListeners(){
+   #addWheelListeners() {
       this.boundKeyDown = this.#handleKeyDown.bind(this);
       this.boundKeyUp = this.#handleKeyUp.bind(this);
       this.boundMouseWheel = this.#handleMouseWheel.bind(this);
       this.boundMouseMove = this.#handleMouseMove.bind(this);
-      this.canvas.addEventListener("wheel", this.boundMouseWheel);
+      // this.canvas.addEventListener("wheel", this.boundMouseWheel);
+      this.canvas.addEventListener("mousedown", this.boundMouseWheel);
+      this.canvas.addEventListener("contextmenu", (event) => { event.preventDefault(); });
       this.canvas.addEventListener("mousemove", this.boundMouseMove);
       window.addEventListener("keydown", this.boundKeyDown);
       window.addEventListener("keyup", this.boundKeyUp);
@@ -253,7 +255,9 @@ class NNEditor {
       this.boundContextMenu = (evt) => evt.preventDefault();
       window.addEventListener("keydown", this.boundKeyDown);
       window.addEventListener("keyup", this.boundKeyUp);
-      this.canvas.addEventListener("wheel", this.boundMouseWheel);
+      // this.canvas.addEventListener("wheel", this.boundMouseWheel);
+      this.canvas.addEventListener("mousedown", this.boundMouseWheel);
+      this.canvas.addEventListener("contextmenu", (event) => { event.preventDefault(); });
       this.canvas.addEventListener("mousedown", this.boundMouseDown);
       this.canvas.addEventListener("mousemove", this.boundMouseMove);
       document.addEventListener("mouseup", this.boundMouseUp);
@@ -263,7 +267,9 @@ class NNEditor {
    #removeEventListeners() {
       window.removeEventListener("keydown", this.boundKeyDown);
       window.removeEventListener("keyup", this.boundKeyUp);
-      this.canvas.removeEventListener("wheel", this.boundMouseWheel);
+      // this.canvas.removeEventListener("wheel", this.boundMouseWheel);
+      this.canvas.removeEventListener("mousedown", this.boundMouseWheel);
+      this.canvas.removeEventListener("contextmenu", (event) => { event.preventDefault(); });
       this.canvas.removeEventListener("mousedown", this.boundMouseDown);
       this.canvas.removeEventListener("mousemove", this.boundMouseMove);
       document.removeEventListener("mouseup", this.boundMouseUp);
@@ -317,7 +323,7 @@ class NNEditor {
             }
             break;
          case "n":
-            this.showingAllHighlights=true;
+            this.showingAllHighlights = true;
             break;
          /*
          case "m":
@@ -347,13 +353,25 @@ class NNEditor {
       const key = evt.key;
       switch (key) {
          case "n":
-            this.showingAllHighlights=false;
+            this.showingAllHighlights = false;
             break;
       }
    }
 
    #handleMouseWheel(evt) {
-      const dir = Math.sign(evt.deltaY);
+      let dir = -1;
+
+      evt.preventDefault();
+
+      switch (evt.button) {
+         case 0:
+            dir = -1;
+            break;
+         case 2:
+            dir = +1;
+            break;
+      }
+
       const step = evt.shiftKey ? -0.01 : -0.1;
       if (this.hovered) {
          if (this.hovered.inputNode) {
@@ -366,9 +384,9 @@ class NNEditor {
             this.hovered.bias = 0;
          }
          save();
-         
+
          discardBtn.style.opacity = 1;
-         discardBtn.style.pointerEvents="";
+         discardBtn.style.pointerEvents = "";
       }
       if (this.hoveredSegment) {
          this.hoveredSegment.weight += dir * step;
@@ -383,7 +401,7 @@ class NNEditor {
          }
          save();
          discardBtn.style.opacity = 1;
-         discardBtn.style.pointerEvents="";
+         discardBtn.style.pointerEvents = "";
       }
    }
 
@@ -513,21 +531,21 @@ class NNEditor {
       this.hovered = null;
    }
 
-   showAllHighlights(){
-      for(const seg of this.graph.segments){
-         this.showHighlightAtPoint(seg.weight,average(seg.p1,seg.p2));
+   showAllHighlights() {
+      for (const seg of this.graph.segments) {
+         this.showHighlightAtPoint(seg.weight, average(seg.p1, seg.p2));
       }
-      for(const point of this.graph.points){
-         if(point.bias!=null){
-            this.showHighlightAtPoint(point.bias,point);
-         }else{
+      for (const point of this.graph.points) {
+         if (point.bias != null) {
+            this.showHighlightAtPoint(point.bias, point);
+         } else {
             this.showVariableAtPoint(point);
             //this.showHighlightAtPoint(point.value,point);
          }
       }
    }
-   showVariableAtPoint(point){
-      const rad = NN.nodeSize * 0.7; 
+   showVariableAtPoint(point) {
+      const rad = NN.nodeSize * 0.7;
       this.ctx.fillStyle = "white"; //getRGBA(val);
       this.ctx.strokeStyle = "black"; //getRGBA(val);
       this.ctx.textAlign = "center";
@@ -535,16 +553,16 @@ class NNEditor {
       this.ctx.font = "bold " + rad * 1 + "px Arial";
       this.ctx.lineWidth = 15;
       this.ctx.beginPath();
-      const vals=["x","y","z","t","u","v","w"];
+      const vals = ["x", "y", "z", "t", "u", "v", "w"];
       const fix = vals[this.graph.inputNodes.indexOf(point)];
       //if (value != null) {
       //   const fix = value.toFixed(2);
-         this.ctx.strokeText(fix, point.x, point.y);
-         this.ctx.fillText(fix, point.x, point.y);
+      this.ctx.strokeText(fix, point.x, point.y);
+      this.ctx.fillText(fix, point.x, point.y);
       //} 
       this.ctx.restore();
    }
-   showHighlightAtPoint(value,point) {
+   showHighlightAtPoint(value, point) {
       const rad = NN.nodeSize * 0.7; /*
         this.ctx.save();
         this.ctx.setLineDash([]);
@@ -630,25 +648,25 @@ class NNEditor {
    display() {
       if (this.hoveredSegment) {
          this.hoveredSegment.draw(this.ctx, {
-                width: NN.lineWidth + 4,
-                color: "rgba(255,255,255,0.5)",
-            });
+            width: NN.lineWidth + 4,
+            color: "rgba(255,255,255,0.5)",
+         });
          /* this.hoveredSegment.draw(this.ctx, {
                 width: NN.lineWidth + 2,
                 color: "rgb(68, 68, 68)",
             });*/
 
-            /*
-         drawArrow2(
-            this.hoveredSegment.p1,
-            this.hoveredSegment.p2,
-            this.ctx,
-            "rgba(255,255,255,0.5)",
-            NN.nodeSize / 2 + NN.lineWidth / 2 + 4,
-            NN.nodeSize * 0.8,
-            "rgba(255,255,255,0.5)",
-            2.4
-         );*/
+         /*
+      drawArrow2(
+         this.hoveredSegment.p1,
+         this.hoveredSegment.p2,
+         this.ctx,
+         "rgba(255,255,255,0.5)",
+         NN.nodeSize / 2 + NN.lineWidth / 2 + 4,
+         NN.nodeSize * 0.8,
+         "rgba(255,255,255,0.5)",
+         2.4
+      );*/
       }
       if (this.hovered) {
          this.hovered.draw(this.ctx, {
@@ -660,7 +678,7 @@ class NNEditor {
 
       if (this.selected && !this.selected.outputNode) {
          //new Segment(this.selected, intent).draw(this.ctx, { color:"#AAA",dash: [3, 3] });
-         if (this.hovered && this.hovered!=this.selected) {
+         if (this.hovered && this.hovered != this.selected) {
             if (!this.hovered.inputNode) {
                /*drawArrow2(
                   this.selected,
@@ -672,12 +690,12 @@ class NNEditor {
                const seg = new Segment(this.selected, this.hovered);
                seg.draw(this.ctx, {
                   color: "rgba(0,0,0,0.5)",
-                  width: NN.lineWidth*1,
+                  width: NN.lineWidth * 1,
                });
                seg.draw(this.ctx, {
                   color: "rgba(255,255,255,0.5)",
-                  width: NN.lineWidth*1,
-                  dash: [7,7]
+                  width: NN.lineWidth * 1,
+                  dash: [7, 7]
                });
             }
          } else {
@@ -685,15 +703,15 @@ class NNEditor {
             const seg = new Segment(this.selected, this.mouse);
             seg.draw(this.ctx, {
                color: "rgba(0,0,0,0.5)",
-               width: NN.lineWidth*1,
+               width: NN.lineWidth * 1,
             });
             seg.draw(this.ctx, {
                color: "rgba(255,255,255,0.5)",
-               width: NN.lineWidth*1,
-               dash: [7,7]
+               width: NN.lineWidth * 1,
+               dash: [7, 7]
             });
          }
-         this.selected.draw(this.ctx, { color: "rgba(255,255,255,0.3)", size: NN.nodeSize*1});
+         this.selected.draw(this.ctx, { color: "rgba(255,255,255,0.3)", size: NN.nodeSize * 1 });
       }
       if (this.specialEdit) {
          if (this.mouse) {
@@ -701,10 +719,10 @@ class NNEditor {
          }
       }
 
-      
-      if(this.showingAllHighlights){
+
+      if (this.showingAllHighlights) {
          this.showAllHighlights();
-      }else{
+      } else {
          if (this.hoveredSegment) {
             this.showHighlight(this.hoveredSegment.weight);
          }
@@ -712,7 +730,7 @@ class NNEditor {
             this.showHighlight(
                this.hovered.bias != null ? this.hovered.bias : this.hovered.value
             );
-         }     
+         }
       }
    }
 }
