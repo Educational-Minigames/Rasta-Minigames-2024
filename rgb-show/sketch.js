@@ -1,9 +1,8 @@
 let img;
 let d;
-let slider;
 let cos30, sin30;
 function preload() {
-  img = loadImage('image.jpg');
+  img = loadImage('image.jpeg');
 }
 let redChannel, blueChannel, greenChannel;
 let c = 0;
@@ -12,8 +11,6 @@ function setup() {
   cos30 = Math.cos(PI / 6);
   sin30 = Math.sin(PI / 6);
   d = 0;
-  slider = createSlider(0, 1, 0, step=0.01);
-  slider
   createCanvas(img.width * 3, img.height);
   // Display original image
 
@@ -64,25 +61,3 @@ function draw() {
   image(blueChannel, -d * img.width, 0);
   c += 0.01;
 }
-
-
-
-// function setup() {
-//   createCanvas(500, 500);
-//   background(0);
-
-//   // Set the blend mode.
-//   blendMode(ADD);
-
-//   // Draw the red circle
-//   fill(255, 0, 0);
-//   ellipse(width / 2 - 50, height / 2, 150, 150);
-
-//   // Draw the green circle
-//   fill(0, 255, 0);
-//   ellipse(width / 2 + 50, height / 2, 150, 150);
-
-//   // Draw the blue circle
-//   fill(0, 0, 255);
-//   ellipse(width / 2, height / 2 + 50, 150, 150);
-// }
