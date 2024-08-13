@@ -362,7 +362,7 @@ class NNEditor {
       let dir = -1;
 
       evt.preventDefault();
-
+      console.log(evt.button)
       switch (evt.button) {
          case 0:
             dir = -1;
@@ -432,6 +432,7 @@ class NNEditor {
    }
 
    #handleMouseDown(evt) {
+      return;
       if (evt.button == 2 || evt.ctrlKey) {
          // right click
          if (this.selected) {
