@@ -159,22 +159,26 @@ function generateCarInspector(index) {
 
    const db = multiDecisionBoundary
       ? new MultiDecisionBoundary(
-           d,
-           cars[index].nn,
-           outputColors,
-           localStorage.getItem("simplified") == "true",
-           decisionBoundarySize,
-           s_1,
-           s_2
-        )
+         d,
+         cars[index].nn,
+         outputColors,
+         localStorage.getItem("simplified") == "true",
+         decisionBoundarySize,
+         s_1,
+         s_2
+      )
       : new DecisionBoundary(d, cars[index].nn);
    //container.appendChild(c);
    container.appendChild(nnCanvas);
    //container.appendChild(nnCanvas2);
    container.appendChild(c3);
-   if (showDecisionBoundary) {
+
+   const url = new URL(window.location.href);
+   const params = new URLSearchParams(url.search);
+   if (showDecisionBoundary && params.get('show_box')) {
       container.appendChild(holder);
    }
+
    inspectionSection.appendChild(container);
    container.style.marginRight = "5px";
    container.style.display = "flex";
@@ -268,7 +272,7 @@ function download() {
    element.setAttribute(
       "href",
       "data:application/json;charset=utf-8," +
-         encodeURIComponent("let carInfo = " + carString)
+      encodeURIComponent("let carInfo = " + carString)
    );
    /*
    let fileName = prompt("File Name", "brain.json");
@@ -350,13 +354,13 @@ function animate() {
       )
       .map((s) => [s.border.p1, s.border.p2]);
 
-   for (let i = cars.length-1; i >=0;i--) {
+   for (let i = cars.length - 1; i >= 0; i--) {
       //cars[i].update(road.borders, traffic);
 
       let minDist = Number.MAX_SAFE_INTEGER;
       let nearest = null;
-      if(crossing && cars[i].polygon && polysIntersect(crossing.poly.points,cars[i].polygon)){
-         timerOn=false;
+      if (crossing && cars[i].polygon && polysIntersect(crossing.poly.points, cars[i].polygon)) {
+         timerOn = false;
       }
       for (const t of targets) {
          const d = distance(t.center, cars[i]);
@@ -441,10 +445,10 @@ function animate() {
 
    }
 
-   if(defaultOptions.applyShortestPath){
-      timer.innerHTML="Time: "+(time/60).toFixed(1);
+   if (defaultOptions.applyShortestPath) {
+      timer.innerHTML = "Time: " + (time / 60).toFixed(1);
    }
-   if(timerOn){
+   if (timerOn) {
       time++;
    }
 
@@ -543,7 +547,7 @@ function animate() {
    nnViewport.reset();
    nnEditor.graph = bestCar.nn;
    nnEditor.display();
-   
+
    if (!bestCar.damaged) {
       //nnViewport.reset();
       //nnEditor.graph = bestCar.nn;
@@ -600,7 +604,7 @@ function animate() {
             !decisionBoundaries[0].nn.equals(bestCar.nn)
          ) {
             decisionBoundaries[0].updateBrain(bestCar.nn);
-            triggerDecisionBoundaryUpdate=false;
+            triggerDecisionBoundaryUpdate = false;
          }
       } else {
          decisionBoundaries[0].updateBrain(bestCar.nn);
@@ -701,7 +705,7 @@ function loadWorld(event) {
    reader.readAsText(file);
 }
 
-function stopOptimize(){
+function stopOptimize() {
    localStorage.removeItem("optimizing");
    test();
 }
@@ -710,8 +714,8 @@ function optimize() {
       localStorage.removeItem("optimizing");
       test();
    } else {*/
-      localStorage.setItem("optimizing", "on");
-      test(); /*
+   localStorage.setItem("optimizing", "on");
+   test(); /*
       localStorage.setItem("optimizing", "on");
       location.reload();*/
    //}
@@ -791,11 +795,11 @@ function updateOptions() {
    if (
       updateBrain ||
       JSON.stringify(newOutputs) !=
-         JSON.stringify(bestCar.brainOptions.outputs) ||
+      JSON.stringify(bestCar.brainOptions.outputs) ||
       JSON.stringify(newHiddenLayerNodeCounts) !=
-         JSON.stringify(bestCar.brainOptions.hiddenLayerNodeCounts) ||
+      JSON.stringify(bestCar.brainOptions.hiddenLayerNodeCounts) ||
       JSON.stringify(newExtraInputs) !=
-         JSON.stringify(bestCar.brainOptions.extraInputs)
+      JSON.stringify(bestCar.brainOptions.extraInputs)
    ) {
       bestCar.brainOptions.hiddenLayerNodeCounts = newHiddenLayerNodeCounts;
       bestCar.brainOptions.outputs = newOutputs;
@@ -918,9 +922,9 @@ function assignPath(cars, target) {
    for (const car of cars) {
       car.segment = getNearestSegment(car, world.graph.segments);
       car.destination = target;
-      const {segs,envs} = world.generateShortestPathBorders(car, target.center);
+      const { segs, envs } = world.generateShortestPathBorders(car, target.center);
       car.assignedBorders = segs;
-      car.envelopes=envs;
+      car.envelopes = envs;
    }
 }
 
