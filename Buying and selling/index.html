@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه سفارشات</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>صفحه سفارشات</h1>
+        <div class="tabs">
+            <button id="buyer-tab" class="tab active">صفحه خریدار</button>
+            <button id="seller-tab" class="tab">صفحه فروشنده</button>
+            <button id="report-tab" class="tab">گزارش سفارشات  </button>
+        </div>
+        <div class="tab-content">
+            <!-- صفحه خریدار -->
+            <div id="buyer-page" class="page active">
+                <div class="box">سفارش خرید</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>قیمت هر سهم</th>
+                            <th>تعداد</th>
+                            <th>قیمت کل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="number" id="buy-price" oninput="calculateTotal('buy')"></td>
+                            <td><input type="number" id="buy-quantity" oninput="calculateTotal('buy')"></td>
+                            <td><input type="text" id="buy-total" readonly></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="button-container">
+                    <button id="buy-button" class="action-button">خرید</button>
+                </div>
+                <div class="box">بودجه</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>بودجه</th>
+                            <th>مقدار باقی مانده</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" id="budget" readonly value="5000"></td>
+                            <td><input type="text" id="remaining-budget" readonly value="5000"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- صفحه فروشنده -->
+            <div id="seller-page" class="page">
+                <div class="box">سفارش فروش</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>قیمت هر سهم</th>
+                            <th>تعداد</th>
+                            <th>قیمت کل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="number" id="sell-price" oninput="calculateTotal('sell')"></td>
+                            <td><input type="number" id="sell-quantity" oninput="calculateTotal('sell')"></td>
+                            <td><input type="text" id="sell-total" readonly></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="button-container">
+                    <button id="sell-button" class="action-button">فروش</button>
+                </div>
+                <div class="box">دارایی</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>تعداد</th>
+                            <th>قیمت تولید</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" id="asset-quantity" readonly value="1000"></td>
+                            <td><input type="text" id="production-price" readonly></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- صفحه گزارش -->
+            <div id="report-page" class="page">
+                <div class="box">گزارش خرید و فروش</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="3" style="color: blue;">گزارش خرید</th>
+                            <th colspan="3" style="color: red;">گزارش فروش</th>
+                        </tr>
+                        <tr>
+                            <th>تعداد</th>
+                            <th>حجم</th>
+                            <th>قیمت</th>
+                            <th>تعداد</th>
+                            <th>حجم</th>
+                            <th>قیمت</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body">
+                        <!-- داده‌های گزارش اینجا قرار می‌گیرند -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
