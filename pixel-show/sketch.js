@@ -7,6 +7,7 @@ let barDragged;
 function preload() {
   // Load an image (replace 'image.jpg' with your image file)
   img = loadImage('0000.jpg');
+  img.loadPixels();
 }
 
 function setup() {
@@ -48,13 +49,26 @@ function draw() {
   if (p > 0) {
     cropped_image = crop(img, p);
     if (cropped_image.width != 0) {
-      image(cropped_image, 0, 0, width * p / img.width, height);
+      // image(cropped_image, 0, 0, width * p / img.width, height);
+      showPixeledImage(cropped_image, 0, 0, width * p / img.width, height);
     }
   }
 
   // draw bar
   fill(255, 0, 0);
   rect(width * (p / img.width-0.005),0, width * 0.01, height, 20);
+}
+function showPixeledImage(img, x, y, w, h) {
+  translate(x, y);
+  let x_ = w / img.width;
+  let y_ = h / img.height;
+  for (let i=0; i < img.height; i++) {
+    for (let j=0; j < img.width; j++) {
+      fill(img.get(j, i));
+      rect(j * x_, i * y_, x_, y_);
+    }
+  }
+  translate(-x, -y);
 }
 
 function crop(img, p) {
