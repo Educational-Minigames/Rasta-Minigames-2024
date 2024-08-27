@@ -362,7 +362,6 @@ class NNEditor {
       let dir = -1;
 
       evt.preventDefault();
-      console.log(evt.button)
       switch (evt.button) {
          case 0:
             dir = -1;
