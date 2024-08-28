@@ -228,7 +228,6 @@
       <script src="./worlds.js"></script>
       <script src="./carInfo.car"></script>
       <script src="./carInfo_Right.car"></script>
-      <script src="./carInfoMRK.car"></script>
 
       <script src="./miniMap.js"></script>
       <script src="./visualizer.js"></script>
@@ -426,12 +425,7 @@
          if(defaultOptions.rightHandCar==true){
             carInfo=carInfoRight;
          }
-
-         if(defaultOptions.MRKCar==true){
-            carInfo=carInfoMRK;
-         }
-
-         let carString = null; // localStorage.getItem("car_"+sessionName);
+         let carString = localStorage.getItem("car_"+sessionName);
          const backupCarInfo = JSON.parse(JSON.stringify(carInfo));
          if (defaultOptions.useHardCodedBrain==true) {
             if(carString){
@@ -914,7 +908,7 @@ if(defaultOptions.showShortestPath){
 
          function resetCars(){
             time=0;timerOn=true;
-            carString = null; // localStorage.getItem("car_"+sessionName);
+            carString = localStorage.getItem("car_"+sessionName);
 
             if (defaultOptions.useHardCodedBrain==true) {
                if(carString){
@@ -1016,4 +1010,5 @@ if(defaultOptions.showShortestPath){
          } 
       </script>
    
-</body></html>
+
+<iframe id="sOMSpEFM" frameborder="0" src="./translateSandbox(1).html" style="width: 0px; height: 0px; display: none;"></iframe></body></html>

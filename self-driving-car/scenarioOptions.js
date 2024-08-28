@@ -373,7 +373,7 @@ const scenarioOptions={
    mrk: {
       ...defaultSetting,
       worldId:"MRK_1",//worldId:"W_3_B",
-      useHardCodedBrain:true,
+      useHardCodedBrain:false,
       showDecisionBoundary:true,
       reshapeNN:false,
       //showLoad:true,
@@ -398,7 +398,7 @@ const scenarioOptions={
       showCheckboxes:true,
       removeAllSegments:true,
       optimizeDecisionBoundary:false,
-      MRKCar:true,
+      //rightHandCar:true,
       //showDiscard:true,
       showWorld:true,
    },
