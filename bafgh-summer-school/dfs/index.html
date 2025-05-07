@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DFS Algorithm Visualization</title>
+    <style>
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+        
+        #game-container { 
+            width: 800px; 
+            height: 600px; 
+            position: relative;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        #graph { 
+            width: 100%; 
+            height: 100%; 
+        }
+        
+        #controls { 
+            margin: 20px; 
+            display: flex; 
+            gap: 20px; 
+            align-items: center; 
+        }
+        
+        #graph-type { 
+            margin: 20px; 
+            display: flex; 
+            gap: 15px; 
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #start {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        #start:hover {
+            background-color: #27ae60;
+        }
+        
+        #reset {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #reset:hover {
+            background-color: #c0392b;
+        }
+        
+        #binary-tree, #random-graph, #grid-graph {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #binary-tree:hover, #random-graph:hover, #grid-graph:hover {
+            background-color: #2980b9;
+        }
+        
+        #stack-display { 
+            font-size: 18px; 
+            padding: 15px 20px; 
+            border: 2px solid #3498db; 
+            border-radius: 10px; 
+            min-width: 300px;
+            background-color: white;
+            font-family: 'Courier New', monospace;
+            color: #2c3e50;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        #message { 
+            color: #27ae60; 
+            font-size: 22px; 
+            margin-top: 10px;
+            font-weight: 600;
+            height: 30px;
+        }
+        
+        .node-label { 
+            font-size: 14px; 
+            fill: white; 
+            text-anchor: middle; 
+            pointer-events: none;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .current { 
+            stroke: #f1c40f; 
+            stroke-width: 4; 
+            filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.7));
+            animation: pulse 1s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { r: 20; }
+            to { r: 23; }
+        }
+        
+        .edge-highlight {
+            stroke: #f1c40f;
+            stroke-width: 4;
+            animation: edgePulse 0.8s;
+        }
+        
+        @keyframes edgePulse {
+            0% { stroke-width: 2; }
+            50% { stroke-width: 6; }
+            100% { stroke-width: 2; }
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+        }
+    </style>
+</head>
+<body>
+    <h1>DFS Algorithm Visualization</h1>
+    <div id="graph-type">
+        <button id="binary-tree">Binary Tree</button>
+        <button id="random-graph">Random Graph</button>
+        <button id="grid-graph">Grid Graph</button>
+    </div>
+    <div id="controls">
+        <button id="start">Start DFS</button>
+        <button id="reset">Reset</button>
+        <div id="stack-display">Stack: []</div>
+    </div>
+    <div id="message"></div>
+    <div id="game-container">
+        <svg id="graph"></svg>
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Enhanced color definitions
+        const COLORS = {
+            UNVISITED: '#95a5a6',
+            IN_STACK: '#3498db',
+            PROCESSING: '#f39c12',
+            VISITED: '#e74c3c',
+            EDGE: '#bdc3c7',
+            EDGE_HIGHLIGHT: '#f1c40f'
+        };
+
+        let nodes = [];
+        let edges = [];
+        let visited = new Set();
+        let isDfsRunning = false;
+        let svgElements = [];
+
+        function createBinaryTree() {
+            const svg = document.getElementById('graph');
+            svg.innerHTML = '';
+            svgElements = [];
+            nodes = [];
+            edges = [];
+            
+            const TREE_HEIGHT = 4;
+            const positions = calculateTreePositions(TREE_HEIGHT, 800, 600);
+            
+            // Create edges
+            for (let i = 0; i < positions.length; i++) {
+                const node = positions[i];
+                if (node.left) {
+                    createEdge(svg, node.x, node.y, positions[node.left].x, positions[node.left].y);
+                    edges.push([i, node.left]);
+                }
+                if (node.right) {
+                    createEdge(svg, node.x, node.y, positions[node.right].x, positions[node.right].y);
+                    edges.push([i, node.right]);
+                }
+            }
+            
+            // Create nodes
+            for (let i = 0; i < positions.length; i++) {
+                const node = positions[i];
+                createNode(svg, node.x, node.y, i);
+                nodes.push({ 
+                    element: document.getElementById(`node-${i}`), 
+                    id: i, 
+                    visited: false, 
+                    inStack: false,
+                    neighbors: []
+                });
+            }
+            
+            // Set up neighbors based on edges
+            edges.forEach(([from, to]) => {
+                nodes[from].neighbors.push(to);
+                nodes[to].neighbors.push(from);
+            });
+            
+            // Add hover effects
+            addHoverEffects();
+        }
+
+        function createRandomGraph() {
+            const svg = document.getElementById('graph');
+            svg.innerHTML = '';
+            svgElements = [];
+            nodes = [];
+            edges = [];
+            
+            const TOTAL_NODES = 10;
+            const TOTAL_EDGES = 13;
+            
+            // Generate random positions for nodes in a circular layout
+            const centerX = 400, centerY = 300, radius = 200;
+            const positions = [];
+            for (let i = 0; i < TOTAL_NODES; i++) {
+                const angle = (i / TOTAL_NODES) * 2 * Math.PI;
+                positions.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                });
+            }
+            
+            // Create a simple cycle (0-1-2-...-9-0) - 10 edges
+            for (let i = 0; i < TOTAL_NODES; i++) {
+                edges.push([i, (i + 1) % TOTAL_NODES]);
+            }
+            
+            // Add 3 more fixed edges to reach 13 total edges
+            const extraEdges = [
+                [0, 3], [2, 5], [4, 7]
+            ];
+            
+            extraEdges.forEach(([from, to]) => {
+                if (!edges.some(([f, t]) => (f === from && t === to) || (f === to && t === from))) {
+                    edges.push([from, to]);
+                }
+            });
+            
+            // Draw edges
+            edges.forEach(([from, to]) => {
+                createEdge(svg, positions[from].x, positions[from].y, positions[to].x, positions[to].y);
+            });
+            
+            // Draw nodes and initialize node objects
+            for (let i = 0; i < TOTAL_NODES; i++) {
+                createNode(svg, positions[i].x, positions[i].y, i);
+                nodes.push({ 
+                    element: document.getElementById(`node-${i}`), 
+                    id: i, 
+                    visited: false, 
+                    inStack: false,
+                    neighbors: []
+                });
+            }
+            
+            // Set up neighbors based on edges
+            edges.forEach(([from, to]) => {
+                nodes[from].neighbors.push(to);
+                nodes[to].neighbors.push(from);
+            });
+            
+            // Add hover effects
+            addHoverEffects();
+        }
+
+        function createGridGraph() {
+            const svg = document.getElementById('graph');
+            svg.innerHTML = '';
+            svgElements = [];
+            nodes = [];
+            edges = [];
+            
+            const TOTAL_NODES = 15;
+            // Create a 3x5 grid
+            const cols = 5;
+            const rows = 3;
+            const positions = [];
+            
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    positions.push({
+                        x: 150 + x * 125,
+                        y: 150 + y * 150
+                    });
+                }
+            }
+            
+            // Create horizontal and vertical edges
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const index = y * cols + x;
+                    
+                    // Right neighbor
+                    if (x < cols - 1) {
+                        edges.push([index, index + 1]);
+                    }
+                    
+                    // Bottom neighbor
+                    if (y < rows - 1) {
+                        edges.push([index, index + cols]);
+                    }
+                }
+            }
+            
+            // Add some diagonal edges
+            const diagonals = [
+                [0, cols+1], [1, cols], [3, cols+4], [4, cols+3]
+            ];
+            
+            diagonals.forEach(([from, to]) => {
+                if (from < TOTAL_NODES && to < TOTAL_NODES) {
+                    edges.push([from, to]);
+                }
+            });
+            
+            // Draw edges
+            edges.forEach(([from, to]) => {
+                createEdge(svg, positions[from].x, positions[from].y, positions[to].x, positions[to].y);
+            });
+            
+            // Draw nodes and initialize node objects
+            for (let i = 0; i < TOTAL_NODES; i++) {
+                createNode(svg, positions[i].x, positions[i].y, i);
+                nodes.push({ 
+                    element: document.getElementById(`node-${i}`), 
+                    id: i, 
+                    visited: false, 
+                    inStack: false,
+                    neighbors: []
+                });
+            }
+            
+            // Set up neighbors based on edges
+            edges.forEach(([from, to]) => {
+                nodes[from].neighbors.push(to);
+                nodes[to].neighbors.push(from);
+            });
+            
+            // Add hover effects
+            addHoverEffects();
+        }
+
+        function calculateTreePositions(height, width, heightPx) {
+            const nodeCount = Math.pow(2, height) - 1;
+            const positions = [];
+            const levelHeight = heightPx / (height + 1);
+            
+            for (let level = 0; level < height; level++) {
+                const nodesInLevel = Math.pow(2, level);
+                const levelWidth = width / (nodesInLevel + 1);
+                
+                for (let i = 0; i < nodesInLevel; i++) {
+                    const index = Math.pow(2, level) - 1 + i;
+                    positions[index] = {
+                        x: levelWidth * (i + 1),
+                        y: (level + 1) * levelHeight,
+                        left: index * 2 + 1 < nodeCount ? index * 2 + 1 : undefined,
+                        right: index * 2 + 2 < nodeCount ? index * 2 + 2 : undefined
+                    };
+                }
+            }
+            return positions;
+        }
+
+        function createEdge(svg, x1, y1, x2, y2) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1); 
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2); 
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', COLORS.EDGE); 
+            line.setAttribute('stroke-width', '3');
+            line.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(line);
+            svgElements.push(line);
+        }
+
+        function createNode(svg, x, y, id) {
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.setAttribute('class', 'node-group');
+            
+            const node = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            node.setAttribute('cx', x); 
+            node.setAttribute('cy', y);
+            node.setAttribute('r', 20); 
+            node.setAttribute('fill', COLORS.UNVISITED);
+            node.setAttribute('id', `node-${id}`); 
+            node.setAttribute('class', 'node');
+            group.appendChild(node);
+            
+            const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            glow.setAttribute('cx', x); 
+            glow.setAttribute('cy', y);
+            glow.setAttribute('r', 24); 
+            glow.setAttribute('fill', 'none');
+            glow.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+            glow.setAttribute('stroke-width', '8');
+            group.appendChild(glow);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', x); 
+            label.setAttribute('y', y + 6);
+            label.setAttribute('class', 'node-label'); 
+            label.textContent = id;
+            group.appendChild(label);
+            
+            svg.appendChild(group);
+            svgElements.push(group);
+        }
+
+        function addHoverEffects() {
+            const tooltip = document.getElementById('tooltip');
+            
+            nodes.forEach(node => {
+                const element = node.element.parentNode; // Get the group element
+                
+                element.addEventListener('mouseenter', (e) => {
+                    const rect = element.getBoundingClientRect();
+                    tooltip.style.left = `${rect.left + rect.width/2}px`;
+                    tooltip.style.top = `${rect.top}px`;
+                    tooltip.textContent = `Node ${node.id}`;
+                    tooltip.style.opacity = '1';
+                    
+                    // Highlight connected edges
+                    node.neighbors.forEach(neighborId => {
+                        const neighborNode = nodes[neighborId];
+                        highlightEdge(node.id, neighborId);
+                    });
+                });
+                
+                element.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = '0';
+                    
+                    // Remove edge highlights
+                    svgElements.forEach(el => {
+                        if (el.classList.contains('edge-highlight')) {
+                            el.classList.remove('edge-highlight');
+                        }
+                    });
+                });
+            });
+        }
+        
+        function highlightEdge(fromId, toId) {
+            // Find and highlight the edge between these nodes
+            edges.forEach(([f, t], index) => {
+                if ((f === fromId && t === toId) || (f === toId && t === fromId)) {
+                    // The edge is at index*2 because we have both lines and groups in svgElements
+                    // This might need adjustment based on your exact SVG structure
+                    const edgeIndex = index;
+                    if (svgElements[edgeIndex]) {
+                        svgElements[edgeIndex].classList.add('edge-highlight');
+                    }
+                }
+            });
+        }
+
+        async function dfs() {
+            isDfsRunning = true;
+            document.getElementById('message').textContent = 'DFS in progress...';
+            const stack = [0];
+            nodes[0].inStack = true;
+            nodes[0].element.setAttribute('fill', COLORS.IN_STACK);
+            updateStackDisplay(stack);
+            
+            // Highlight the starting node
+            nodes[0].element.classList.add('current');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            while (stack.length > 0 && isDfsRunning) {
+                const currentId = stack[stack.length - 1];
+                const currentNode = nodes[currentId];
+                
+                if (!currentNode.visited) {
+                    // Mark as processing (current node)
+                    currentNode.element.setAttribute('fill', COLORS.PROCESSING);
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    
+                    // Mark as visited
+                    currentNode.visited = true;
+                    visited.add(currentId.toString());
+                    currentNode.element.setAttribute('fill', COLORS.VISITED);
+                }
+                
+                // Find first unvisited neighbor
+                let foundUnvisited = false;
+                for (const neighborId of currentNode.neighbors) {
+                    const neighborNode = nodes[neighborId];
+                    if (!neighborNode.visited && !neighborNode.inStack) {
+                        // Highlight the edge being explored
+                        highlightEdge(currentId, neighborId);
+                        
+                        stack.push(neighborId);
+                        neighborNode.inStack = true;
+                        neighborNode.element.setAttribute('fill', COLORS.IN_STACK);
+                        neighborNode.element.classList.add('current');
+                        foundUnvisited = true;
+                        
+                        updateStackDisplay(stack);
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                        
+                        // Remove current highlight from previous node
+                        if (stack.length > 1) {
+                            nodes[stack[stack.length-2]].element.classList.remove('current');
+                        }
+                        
+                        break;
+                    }
+                }
+                
+                if (!foundUnvisited) {
+                    currentNode.element.classList.remove('current');
+                    stack.pop();
+                    currentNode.inStack = false;
+                    
+                    // If there's still nodes in stack, highlight the new top
+                    if (stack.length > 0) {
+                        nodes[stack[stack.length-1]].element.classList.add('current');
+                    }
+                    
+                    updateStackDisplay(stack);
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                }
+            }
+
+            isDfsRunning = false;
+            if (visited.size === nodes.length) {
+                document.getElementById('message').textContent = 'DFS Complete! All nodes visited.';
+            } else if (visited.size > 0) {
+                document.getElementById('message').textContent = `DFS Complete! Visited ${visited.size} of ${nodes.length} nodes.`;
+            }
+        }
+
+        function updateStackDisplay(stack) {
+            const stackDisplay = document.getElementById('stack-display');
+            stackDisplay.textContent = `Stack: [${stack.join(', ')}]`;
+            
+            // Add animation
+            stackDisplay.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                stackDisplay.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function resetGraph() {
+            if (isDfsRunning) {
+                isDfsRunning = false;
+            }
+            
+            nodes.forEach(node => {
+                node.element.setAttribute('fill', COLORS.UNVISITED);
+                node.visited = false;
+                node.inStack = false;
+                node.element.classList.remove('current');
+            });
+            
+            // Reset edge highlights
+            svgElements.forEach(el => {
+                if (el.classList.contains('edge-highlight')) {
+                    el.classList.remove('edge-highlight');
+                }
+            });
+            
+            visited.clear();
+            updateStackDisplay([]);
+            document.getElementById('message').textContent = 'Graph reset. Ready for new DFS.';
+        }
+
+        document.getElementById('start').addEventListener('click', () => {
+            if (!isDfsRunning && visited.size === 0 && nodes.length > 0) {
+                dfs();
+            } else if (visited.size > 0) {
+                document.getElementById('message').textContent = 'Please reset the graph before starting a new DFS.';
+            }
+        });
+
+        document.getElementById('reset').addEventListener('click', resetGraph);
+
+        document.getElementById('binary-tree').addEventListener('click', () => {
+            if (!isDfsRunning) {
+                resetGraph();
+                createBinaryTree();
+            }
+        });
+
+        document.getElementById('random-graph').addEventListener('click', () => {
+            if (!isDfsRunning) {
+                resetGraph();
+                createRandomGraph();
+            }
+        });
+
+        document.getElementById('grid-graph').addEventListener('click', () => {
+            if (!isDfsRunning) {
+                resetGraph();
+                createGridGraph();
+            }
+        });
+
+        // Initialize with binary tree
+        createBinaryTree();
+    </script>
+</body>
+</html>
